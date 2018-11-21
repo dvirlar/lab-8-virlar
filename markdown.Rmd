@@ -1,0 +1,19 @@
+---
+title: "Lab 8 - Linear Regression in R"
+author: "Daphne Virlar"
+date: "11/21/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+Load libraries and data
+```{r}
+library(tidyverse)
+salmon <- read_csv("salmon_imports_copy.csv")
+```
+

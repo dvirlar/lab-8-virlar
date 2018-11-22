@@ -17,3 +17,152 @@ library(tidyverse)
 salmon <- read_csv("salmon_imports_copy.csv")
 ```
 
+
+Exploratory graphs
+```{r}
+expo_salmon <- ggplot(salmon, aes(x=year, y= salmon_fresh))+
+  geom_point()
+
+expo_salmon
+
+#It looks mostly fine, except for those two weird dips
+```
+
+
+
+Create the linear regression
+```{r}
+#Outline for a linear regression
+      #model_name <- lm(y_variable ~ x_variable, data = df_name)
+salmon_model <- lm(salmon_fresh ~ year, data = salmon)
+summary(salmon_model)
+  #intercept --> y-intercept
+  #year      --> slope
+  
+#R squared value = 0.9478
+#Adjusted = 0.9458       --> use adjusted r square variable when using multiple predictor variables
+
+
+#y = β0 + β1x + e
+      #y = (linear component) + error term
+
+b <- -14982940
+m <- 7550
+
+#Write out the linaer model
+#salmon_imports <- m*x + b
+#y = 7550x + (-14982940)
+
+```
+
+
+What does the slope mean in the context of this model?
+It means that salmon imports are increasing per year.
+
+What about the y-intercept? Why is that concerning? What does this mean about extrapolating this model for past values?
+It's concerning because you can't have less than zero salmon. It makes it impossible because at year zero, we have "negative salmon", and you can't have negative fish in the ocean. 
+
+
+
+Model Diagnostics
+```{r}
+plot(salmon_model)
+#Our residuals look fine. Normal Q-Q and Residuals v Fitted have some outliers, but I'm not concerned about it given what our exploratory data analysis shows us. 
+
+
+
+```
+
+Explore model fit and significance
+```{r}
+summary(salmon_model)
+#H0 -- no significant correlation y and x
+#HA -- there is significant correlation between y and x
+
+#Yes, year significantly predicts salmon imports. R2 = 0.9478, p-value < 0.001
+
+
+#The R^2 value tells us how much variance in our dependent variable is expained by our independent variable
+
+
+#About 5% of salmon imports is not explained by year
+
+```
+
+
+Prepare a final graph
+```{r}
+#create a final graph of the linear regression model with the original data, model and 95% confidence interval for predictions
+
+
+salmon_final_graph <- ggplot(salmon, aes(x = year, y = salmon_fresh))+
+  geom_point()+
+  geom_smooth(method = lm, se = TRUE, size = 0.5, color = "purple") + 
+  #method = lm tells R to do this line as a linear regression
+#se = TRUE tells R to include a confidence interval
+#size = 0.5 tells r to change the width of the line
+#color changes the color of the line
+  theme_bw() +
+  scale_x_continuous(expand = c(0,0), limits = c(1990, 2017))+
+  labs(x = "Year", y = "U.S. Annual Fresh Salmon Imports \n(1,000 lbs)")+
+  ggtitle("Salmon Imports by Year")
+
+
+salmon_final_graph
+```
+
+
+
+Make predictions using the model
+```{r}
+#Column name is same as year that the model uses. This is intentional
+new_years <- data.frame(year = c(2022, 2024, 2026, 2028))
+
+
+future_predict <- predict(salmon_model, newdata = new_years, interval = "confidence")
+future_predict
+  #fit is the model fit
+  #lwr is the lower bound, and vice versa for upr
+
+predictions <- data.frame(new_years, future_predict)
+
+
+```
+
+
+Find Pearson's r (correlation)
+```{r}
+#Use the cor.test() function to find Pearson’s r for the linear relationship described between year and salmon imports.
+
+#cor.test(x,y)
+salmon_pr <- cor.test(salmon$year, salmon$salmon_fresh)
+salmon_pr
+
+
+#Pearson's r = 0.9735387
+#p-value < 0.001
+
+#Strong positive correlation
+
+```
+
+Describe Results
+
+
+F-statistic: 471.9 on 1 and 26 DF,  p-value: < 2.2e-16
+
+
+1. Thorough
+“Year significantly predicts salmon imports (b = 7550, t(df) = , p < 0.01) with a strong positive correlation between the two (Pearson's r = 0.97). The overall model (salmon imports = 7550*year - 14982940, in tonnes) explains a significant amount of variance in salmon imports (F(1,26) = 471.9, p < 0.01, R2 = 0.95)
+
+
+
+2. Simplified
+“The model (salmon imports = 7550 ∗ (year) − 14982940; in tonnes) explains a significant amount of
+variance in salmon imports (F(1,26) = 471.9, p < 0.001, R2 = 0.95, Pearson’s r = 0.97).”
+
+
+
+
+
+
